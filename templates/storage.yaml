@@ -1,0 +1,15 @@
+{{- if not .Values.dataVolume.claim }}
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "jupyter-control-notebook-chart.fullname" . }}-jupyther-data
+spec:
+  accessModes:
+    - {{ .Values.dataVolume.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.dataVolume.size }}
+---
+{{- end }}
+
