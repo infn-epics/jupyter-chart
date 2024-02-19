@@ -23,7 +23,12 @@ spec:
     initContainers:
     - name: fix-permissions
       image: baltig.infn.it:4567/epics-containers/container-init
-      command: ["sh", "-c", "chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /home/jovyan"]
+      command: 
+      - sh 
+      - -c
+      - |
+        chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /home/jovyan
+
       volumeMounts:
       - name: jupyter-data
         mountPath: /home/jovyan
