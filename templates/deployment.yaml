@@ -105,9 +105,28 @@ spec:
         - sh 
         - -c
         - |
+          mountdir=/home/jovyan
+          cd $mountdir
+          if [ -n {{ .Values.gitRepoConfig.url }} ]; then
+            if [ -n "{{ .Values.gitRepoConfig.branch }}" ];then
+
+              git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules temp-config
+            else
+              git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules temp-config
+            fi
+            if [ -d temp-config/{{ .Values.gitRepoConfig.path}} ];then
+              if [ "{{ .Values.gitRepoConfig.path }}" == "." ];then
+                mv temp-config/* $mountdir/
+              else
+                mv temp-config/{{ .Values.gitRepoConfig.path }}/* $mountdir/
+                rm -rf temp-config
+              fi
+            else
+              mv temp-config/* $mountdir/
+            fi
+          fi
           ls -latr /home/jovyan
           id
-          # chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /home/jovyan
 
         volumeMounts:
         - name: jupyter-data
