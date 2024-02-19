@@ -47,7 +47,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
-            - name: jupyter-volume
+            - name: jupyter-data
               mountPath: /home/jovyan/work
             
           stdin: {{ .Values.image.stdinOpen }}
