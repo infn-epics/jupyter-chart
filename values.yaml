@@ -24,14 +24,14 @@ serviceAccount:
   name: "default"
 
 podAnnotations: {}
-
-podSecurityContext:
-  runAsNonRoot: true
-  allowPrivilegeEscalation: true
-  
+    
 
 securityContext:
-    
+  runAsNonRoot: true
+  allowPrivilegeEscalation: true
+  runAsUser: 1000
+  fsGroup: 0
+
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
