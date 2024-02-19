@@ -1,13 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "jupyter-control-notebook-chart.fullname" . }}
   labels:
     {{- include "jupyter-control-notebook-chart.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
+  serviceName: "jupyter-notebook"
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 6 }}
@@ -34,14 +33,93 @@ spec:
         volumeMounts:
         - name: jupyter-data
           mountPath: /home/jovyan
-      
+
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
       securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+        {{- toYaml .Values.securityContext | nindent 12 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: jupyter-data
+              mountPath: /home/jovyan/work
+            
+          stdin: {{ .Values.image.stdinOpen }}
+          tty: {{ .Values.image.tty }}
+          {{- if .Values.configCA.existingConfigMap}}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.configCA.existingConfigMap }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8888
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: jupyter-data
+          persistentVolumeClaim:
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "jupyter-control-notebook-chart.fullname" . }}
+  labels:
+    {{- include "jupyter-control-notebook-chart.labels" . | nindent 4 }}
+spec:
+  serviceName: "jupyter-notebook"
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: fix-permissions
+        image: baltig.infn.it:4567/epics-containers/container-init
+        command: 
+        - sh 
+        - -c
+        - |
+          ls -latr /home/jovyan
+          id
+          # chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /home/jovyan
+
+        volumeMounts:
+        - name: jupyter-data
+          mountPath: /home/jovyan
+
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 12 }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -80,6 +158,14 @@ spec:
           persistentVolumeClaim:
           {{- if .Values.dataVolume.claim }}
             claimName: {{ .Values.dataVolume.claim }}
-          {{- else}}
-            claimName: {{ include "jupyter-control-notebook-chart.fullname" . }}-jupyter-data
           {{- end }}
+  {{- if not .Values.dataVolume.claim }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "jupyter-control-notebook-chart.fullname" . }}-jupyter-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.dataVolume.size }}
+  {{- end }}
