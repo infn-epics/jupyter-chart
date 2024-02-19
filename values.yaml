@@ -29,8 +29,8 @@ podSecurityContext: {}
   # fsGroup: 2000
 
 securityContext:
-    runAsUser: 1000  # Set the user ID you want
-    fsGroup: 100      # Set the group ID you want
+    runAsUser: 1000690000  # Set the user ID you want
+    fsGroup: 0      # Set the group ID you want
   # capabilities:
   #   drop:
   #   - ALL
