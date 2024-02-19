@@ -28,15 +28,9 @@ podAnnotations: {}
 
 securityContext:
   runAsNonRoot: true
-  allowPrivilegeEscalation: true
   runAsUser: 1000
   fsGroup: 0
 
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 service:
   type: ClusterIP
