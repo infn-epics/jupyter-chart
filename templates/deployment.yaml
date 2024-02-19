@@ -107,24 +107,22 @@ spec:
         - |
           mountdir=/home/jovyan
           cd $mountdir
-          if [ -n {{ .Values.gitRepoConfig.url }} ]; then
-            if [ -n "{{ .Values.gitRepoConfig.branch }}" ];then
-
-              git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules temp-config
-            else
-              git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules temp-config
-            fi
-            if [ -d temp-config/{{ .Values.gitRepoConfig.path}} ];then
-              if [ "{{ .Values.gitRepoConfig.path }}" == "." ];then
-                mv temp-config/* $mountdir/
-              else
-                mv temp-config/{{ .Values.gitRepoConfig.path }}/* $mountdir/
-                rm -rf temp-config
+            if [ -n {{ .Values.gitRepoConfig.url }} ]; then
+              if [ -n "{{ .Values.gitRepoConfig.branch }}" ];then
+                    git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules
+                  else
+                    git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules
               fi
-            else
-              mv temp-config/* $mountdir/
+              if [ -d temp-config/{{ .Values.gitRepoConfig.path}} ];then
+                    if [ "{{ .Values.gitRepoConfig.path }}" != "." ];then
+                        mv temp-config/{{ .Values.gitRepoConfig.path }}/* $mountdir/
+
+                    fi
+
+              fi
             fi
-          fi
+
+              
           ls -latr /home/jovyan
           id
 
