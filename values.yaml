@@ -25,8 +25,9 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  runAsUser: "1000690000"  # Set the user ID you want
+  fsGroup: "0"      # Set the group ID you want
 
 securityContext:
     runAsUser: "1000690000"  # Set the user ID you want
