@@ -88,3 +88,9 @@ dataVolume:
   claim:  ## an existing claim or empty will create a new one
   size: 50Gi ## size of the claim
   accessMode: ReadWriteOnce
+
+gitRepoConfig:
+  url:            # if set use git repo for configuration
+  branch: main
+  path: "."
+  exec: "" ## start script (if any) to execute 
