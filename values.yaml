@@ -93,3 +93,5 @@ gitRepoConfig:
   branch: main
   path: "."
   exec: "" ## start script (if any) to execute 
+
+hashedpass: "$y$j9T$loi9dxXionweQcXt6TMJY1$YPcS7GtVzZqF7/DTjJMao/9ty3HuhYcQuQC2hr2NW9/"
