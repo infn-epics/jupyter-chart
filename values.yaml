@@ -94,4 +94,4 @@ gitRepoConfig:
   path: "."
   exec: "" ## start script (if any) to execute 
 
-hashedpass: "d9477d90d24247c7683456bd83b7cf68f0ee1eead5d54b3a32314fec953ce017"
+hashedpass: "argon2:$argon2id$v=19$m=10240,t=10,p=8$yZEhXIv+GjgLRKsPbRRCnA$81V1v2J9EQlYdcQ3uKQMzUrfrVQAcYXOOP++op6rtoo"
