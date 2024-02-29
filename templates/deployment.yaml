@@ -154,7 +154,7 @@ spec:
           {{- end }}
           env:
             - name: NOTEBOOK_ARGS
-              value: "--ServerApp.password={{ .Values.hashedpass }}"
+              value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
           ports:
             - name: http
               containerPort: 8888
