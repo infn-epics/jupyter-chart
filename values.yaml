@@ -93,5 +93,5 @@ gitRepoConfig:
   branch: main
   path: "."
   exec: "" ## start script (if any) to execute 
-
+## in a python console from jupyter_server.auth import passwd; passwd()
 hashedpass: "argon2:$argon2id$v=19$m=10240,t=10,p=8$yZEhXIv+GjgLRKsPbRRCnA$81V1v2J9EQlYdcQ3uKQMzUrfrVQAcYXOOP++op6rtoo"
