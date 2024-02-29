@@ -155,6 +155,12 @@ spec:
           env:
             - name: NOTEBOOK_ARGS
               value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
+           {{- if .Values.configCA.address_list }}
+            - name: EPICS_CA_ADDR_LIST
+              value: {{ .Values.configCA.address_list | quote }}
+            - name: EPICS_CA_AUTO_ADDR_LIST
+              value: "NO"
+            {{- end }}
           ports:
             - name: http
               containerPort: 8888
