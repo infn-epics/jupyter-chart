@@ -78,11 +78,6 @@ tolerations: []
 
 affinity: {}
 
-configCA:
-  existingConfigMap: "" # name of existing configMap that set CA parameters
-  address_list: ""
-  max_array_bytes: "10000000"
-
 dataVolume:
   claim:  ## an existing claim or empty will create a new one
   size: 50Gi ## size of the claim
@@ -95,3 +90,7 @@ gitRepoConfig:
   exec: "" ## start script (if any) to execute 
 ## in a python console from jupyter_server.auth import passwd; passwd()
 hashedpass: "argon2:$argon2id$v=19$m=10240,t=10,p=8$yZEhXIv+GjgLRKsPbRRCnA$81V1v2J9EQlYdcQ3uKQMzUrfrVQAcYXOOP++op6rtoo"
+
+epicsConfiguration:
+  name:    ## load the epicsConfigurationMap
+  gateway: ## if defined EPICS_CA_ADDR_LIST is overridden

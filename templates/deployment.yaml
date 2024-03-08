@@ -51,10 +51,18 @@ spec:
             
           stdin: {{ .Values.image.stdinOpen }}
           tty: {{ .Values.image.tty }}
-          {{- if .Values.configCA.existingConfigMap}}
+          {{- if .Values.epicsConfiguration.name }}
           envFrom:
             - configMapRef:
-                name: {{ .Values.configCA.existingConfigMap }}
+                name: {{ .Values.epicsConfiguration.name }}
+          {{- end }}
+
+          env:
+          {{- if .Values.epicsConfiguration.gateway }}
+            - name: EPICS_CA_ADDR_LIST
+              value: {{ .Values.epicsConfiguration.gateway | quote }}
+            - name: EPICS_CA_AUTO_ADDR_LIST
+              value: "NO"
           {{- end }}
           ports:
             - name: http
