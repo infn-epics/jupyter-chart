@@ -155,17 +155,17 @@ spec:
             
           stdin: {{ .Values.image.stdinOpen }}
           tty: {{ .Values.image.tty }}
-          {{- if .Values.configCA.existingConfigMap}}
+          {{- if .Values.epicsConfiguration.name }}
           envFrom:
             - configMapRef:
-                name: {{ .Values.configCA.existingConfigMap }}
+                name: {{ .Values.epicsConfiguration.name }}
           {{- end }}
           env:
             - name: NOTEBOOK_ARGS
               value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
-           {{- if .Values.configCA.address_list }}
+           {{- if .Values.epicsConfiguration.gateway }}
             - name: EPICS_CA_ADDR_LIST
-              value: {{ .Values.configCA.address_list | quote }}
+              value: {{ .Values.epicsConfiguration.gateway | quote }}
             - name: EPICS_CA_AUTO_ADDR_LIST
               value: "NO"
             {{- end }}
