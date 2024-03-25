@@ -116,10 +116,10 @@ spec:
           mountdir=/home/jovyan
           cd $mountdir
           id=`id`
-          echo "ID: $id "
-          url=
-          if [ -n {{ .Values.gitRepoConfig.url }} ]; then
-            url = {{ .Values.gitRepoConfig.url }}
+          url="{{ .Values.gitRepoConfig.url }}"
+
+          echo "ID: $id git $url"
+          if [ -n "$url" ]; then
             clone_dir=$(basename "$url" .git)
             echo "* git directory $clone_dir"
             if [ -d $clone_dir ];then
