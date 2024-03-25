@@ -196,7 +196,7 @@ spec:
   {{- if not .Values.dataVolume.claim }}
   volumeClaimTemplates:
   - metadata:
-      name: {{ include "jupyter-control-notebook-chart.fullname" . }}-jupyter-data
+      name: jupyter-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

@@ -80,7 +80,7 @@ affinity: {}
 
 dataVolume:
   claim:  ## an existing claim or empty will create a new one
-  size: 50Gi ## size of the claim
+  size: 10Gi ## size of the claim
   accessMode: ReadWriteOnce
 
 gitRepoConfig:
