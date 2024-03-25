@@ -164,6 +164,8 @@ spec:
           env:
             - name: NOTEBOOK_ARGS
               value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
+            - name: JUPYTER_SERVER_URL
+              value: "127.0.0.1:8888"
            {{- if .Values.epicsConfiguration.gateway }}
             - name: EPICS_CA_ADDR_LIST
               value: {{ .Values.epicsConfiguration.gateway | quote }}
