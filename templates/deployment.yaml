@@ -117,28 +117,24 @@ spec:
           cd $mountdir
           id=`id`
           echo "ID: $id "
-          if [ -d temp ];then
-            rm -rf temp
-          fi
+          url=
           if [ -n {{ .Values.gitRepoConfig.url }} ]; then
-            if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
-              git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules temp
-            else
-              git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules temp
-            fi
-            echo "path {{ .Values.gitRepoConfig.path }}"
-            if [ -d temp/{{ .Values.gitRepoConfig.path }} ]; then
-              if [ "{{ .Values.gitRepoConfig.path }}" != "." ]; then
-                mv temp/{{ .Values.gitRepoConfig.path }}/* $mountdir/
+            url = {{ .Values.gitRepoConfig.url }}
+            clone_dir=$(basename "$url" .git)
+            echo "* git directory $clone_dir"
+            if [ -d $clone_dir ];then
+              cd $clone_dir
+              git pull --recurse-submodules
+            else 
+              if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
+                git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules 
               else
-                mv temp/* $mountdir/
+                git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules 
               fi
             fi
+            
           fi
           ls -latr
-          echo "Running {{ .Values.gitRepoConfig.exec }}..."
-          $mountdir/{{ .Values.gitRepoConfig.exec }}
-
         volumeMounts:
         - name: jupyter-data
           mountPath: /home/jovyan
