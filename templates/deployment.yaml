@@ -137,7 +137,7 @@ spec:
           ls -latr
         volumeMounts:
         - name: jupyter-data
-          mountPath: /home/jovyan
+          mountPath: /tmp
 
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -190,22 +190,22 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.dataVolume.claim }}
+
       volumes:
         - name: jupyter-data
-      {{- if .Values.dataVolume.claim }}
 
           persistentVolumeClaim:
             claimName: {{ .Values.dataVolume.claim }}
-      {{- else }}
-          emptydir: {}
+      
       {{- end }}
-  # {{- if not .Values.dataVolume.claim }}
-  # volumeClaimTemplates:
-  # - metadata:
-  #     name: jupyter-data
-  #   spec:
-  #     accessModes: [ "ReadWriteOnce" ]
-  #     resources:
-  #       requests:
-  #         storage: {{ .Values.dataVolume.size }}
-  # {{- end }}
+  {{- if not .Values.dataVolume.claim }}
+  volumeClaimTemplates:
+  - metadata:
+      name: jupyter-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.dataVolume.size }}
+  {{- end }}
