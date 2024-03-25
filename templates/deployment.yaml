@@ -187,12 +187,12 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.dataVolume.claim }}
       volumes:
         - name: jupyter-data
           persistentVolumeClaim:
-          {{- if .Values.dataVolume.claim }}
             claimName: {{ .Values.dataVolume.claim }}
-          {{- end }}
+      {{- end }}
   {{- if not .Values.dataVolume.claim }}
   volumeClaimTemplates:
   - metadata:
