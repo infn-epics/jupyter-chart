@@ -79,7 +79,7 @@ tolerations: []
 affinity: {}
 
 dataVolume:
-  claim:  ## an existing claim or empty will create a new one
+  claim: "" ## an existing claim or empty will create a new one
   size: 10Gi ## size of the claim
   accessMode: ReadWriteOnce
 
