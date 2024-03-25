@@ -117,6 +117,9 @@ spec:
           cd $mountdir
           id=`id`
           echo "ID: $id "
+          if [ -d temp ];then
+            rm -rf temp
+          fi
           if [ -n {{ .Values.gitRepoConfig.url }} ]; then
             if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
               git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules temp
