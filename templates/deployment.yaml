@@ -139,16 +139,16 @@ spec:
         volumeMounts:
         - name: jupyter-data
           mountPath: /tmp
-
+        resources:
+{{ toYaml .Values.resources | nindent 12 }}
+        securityContext:
+{{ toYaml .Values.securityContext | indent 12}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
-      resources:
-{{ toYaml .Values.resources | nindent 12 }}
-      securityContext:
-{{ toYaml .Values.securityContext | indent 12}}
+      
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
