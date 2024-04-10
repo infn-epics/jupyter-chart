@@ -39,8 +39,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.securityContext | nindent 12 }}
+      
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -70,6 +69,8 @@ spec:
               protocol: TCP
           resources:
 {{ toYaml .Values.resources | nindent 12 }}
+          securityContext:
+{{ toYaml .Values.securityContext | indent 12}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -144,8 +145,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
+      resources:
+{{ toYaml .Values.resources | nindent 12 }}
       securityContext:
-        {{- toYaml .Values.securityContext | nindent 12 }}
+{{ toYaml .Values.securityContext | indent 12}}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

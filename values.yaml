@@ -29,7 +29,7 @@ podAnnotations: {}
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
-  fsGroup: 0
+#  fsGroup: 0
 
 
 service:
