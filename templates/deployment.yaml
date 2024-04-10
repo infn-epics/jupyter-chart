@@ -68,9 +68,9 @@ spec:
               containerPort: 8888
               protocol: TCP
           resources:
-{{ toYaml .Values.resources | nindent 12 }}
+{{- toYaml .Values.resources | nindent 11 }}
           securityContext:
-{{ toYaml .Values.securityContext | indent 12}}
+{{ toYaml .Values.securityContext | indent 11}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
