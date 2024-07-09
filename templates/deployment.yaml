@@ -25,7 +25,7 @@ spec:
       securityContext:
         {{- toYaml .Values.securityContext | nindent 8 }}
       {{- if .Values.securityContext.runAsUser }}
-      fsGroup: {{ .Values.securityContext.runAsUser }}
+        fsGroup: {{ .Values.securityContext.runAsUser }}
       {{- end }}
       initContainers:
       - name: fix-permissions
