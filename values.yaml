@@ -29,7 +29,7 @@ podAnnotations: {}
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000
-#  fsGroup: 0
+  fsGroup: 1000
 
 
 service:
@@ -94,3 +94,6 @@ hashedpass: "argon2:$argon2id$v=19$m=10240,t=10,p=8$yZEhXIv+GjgLRKsPbRRCnA$81V1v
 epicsConfiguration:
   name:    ## load the epicsConfigurationMap
   gateway: ## if defined EPICS_CA_ADDR_LIST is overridden
+
+pip:
+  - infn-ophyd-hal

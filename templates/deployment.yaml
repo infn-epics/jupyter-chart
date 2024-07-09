@@ -179,6 +179,18 @@ spec:
             - name: http
               containerPort: 8888
               protocol: TCP
+          command: 
+            - sh 
+            - -c
+            - |
+              echo "Starting Notebook"
+
+              {{- range .Values.pip }}
+                echo "installing {{.}}"
+                pip install {{.}}
+              {{- end }}
+              cd /usr/local/bin/
+              tini -g -- start.sh start-notebook.py
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
