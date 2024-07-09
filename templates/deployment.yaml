@@ -19,6 +19,14 @@ spec:
       labels:
         {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 8 }}
     spec:
+    {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName | quote }}
+      {{- end }}
+      securityContext:
+{{ toYaml .Values.securityContext | indent 8 }}
+      {{- if .Values.securityContext.runAsUser }}
+        fsGroup: {{ .Values.securityContext.runAsUser }}
+      {{- end }}
       initContainers:
       - name: fix-permissions
         image: baltig.infn.it:4567/epics-containers/container-init
