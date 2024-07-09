@@ -19,102 +19,14 @@ spec:
       labels:
         {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 8 }}
     spec:
-    {{- if .Values.serviceAccountName }}
+      {{- if .Values.serviceAccountName }}
       serviceAccountName: {{ .Values.serviceAccountName | quote }}
       {{- end }}
       securityContext:
-{{ toYaml .Values.securityContext | indent 8 }}
+        {{- toYaml .Values.securityContext | nindent 8 }}
       {{- if .Values.securityContext.runAsUser }}
-        fsGroup: {{ .Values.securityContext.runAsUser }}
+      fsGroup: {{ .Values.securityContext.runAsUser }}
       {{- end }}
-      initContainers:
-      - name: fix-permissions
-        image: baltig.infn.it:4567/epics-containers/container-init
-        command: 
-        - sh 
-        - -c
-        - |
-          ls -latr /home/jovyan
-          id
-          # chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /home/jovyan
-
-        volumeMounts:
-        - name: jupyter-data
-          mountPath: /home/jovyan
-
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
-      
-      containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - name: jupyter-data
-              mountPath: /home/jovyan/work
-            
-          stdin: {{ .Values.image.stdinOpen }}
-          tty: {{ .Values.image.tty }}
-          {{- if .Values.epicsConfiguration.name }}
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.epicsConfiguration.name }}
-          {{- end }}
-
-          env:
-          {{- if .Values.epicsConfiguration.gateway }}
-            - name: EPICS_CA_ADDR_LIST
-              value: {{ .Values.epicsConfiguration.gateway | quote }}
-            - name: EPICS_CA_AUTO_ADDR_LIST
-              value: "NO"
-          {{- end }}
-          ports:
-            - name: http
-              containerPort: 8888
-              protocol: TCP
-          resources:
-{{- toYaml .Values.resources | nindent 11 }}
-          securityContext:
-{{ toYaml .Values.securityContext | indent 11}}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      volumes:
-        - name: jupyter-data
-          persistentVolumeClaim:
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: {{ include "jupyter-control-notebook-chart.fullname" . }}
-  labels:
-    {{- include "jupyter-control-notebook-chart.labels" . | nindent 4 }}
-spec:
-  serviceName: "jupyter-notebook"
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 6 }}
-  template:
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "jupyter-control-notebook-chart.selectorLabels" . | nindent 8 }}
-    spec:
       initContainers:
       - name: fix-permissions
         image: baltig.infn.it:4567/epics-containers/container-init
@@ -131,7 +43,7 @@ spec:
           if [ -n "$url" ]; then
             clone_dir=$(basename "$url" .git)
             echo "* git directory $clone_dir"
-            if [ -d $clone_dir ];then
+            if [ -d $clone_dir ]; then
               cd $clone_dir
               git pull --recurse-submodules
             else 
@@ -141,80 +53,75 @@ spec:
                 git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules 
               fi
             fi
-            
           fi
           ls -latr
         volumeMounts:
         - name: jupyter-data
-          mountPath: /tmp
+          mountPath: /home/jovyan
         resources:
-{{ toYaml .Values.resources | nindent 12 }}
+{{ toYaml .Values.resources | indent 12 }}
         securityContext:
-{{ toYaml .Values.securityContext | indent 12}}
+          {{- toYaml .Values.securityContext | nindent 8 }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "jupyter-control-notebook-chart.serviceAccountName" . }}
-      
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - name: jupyter-data
-              mountPath: /home/jovyan/work
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - name: jupyter-data
+          mountPath: /home/jovyan/work
+        {{- range .Values.nfsMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+        {{- end }}
+        stdin: {{ .Values.image.stdinOpen }}
+        tty: {{ .Values.image.tty }}
+        {{- if .Values.epicsConfiguration.name }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.epicsConfiguration.name }}
+        {{- end }}
+        env:
+        - name: NOTEBOOK_ARGS
+          value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
+        - name: JUPYTER_SERVER_URL
+          value: "http://127.0.0.1:8888"
+        {{- if .Values.epicsConfiguration.gateway }}
+        - name: EPICS_CA_ADDR_LIST
+          value: {{ .Values.epicsConfiguration.gateway | quote }}
+        - name: EPICS_CA_AUTO_ADDR_LIST
+          value: "NO"
+        {{- end }}
+        {{- range .Values.nfsMounts }}
+        - name: {{ .name | upper }}_SERVER
+          value: {{ .server | quote }}
+        - name: {{ .name | upper }}_SERVER_PATH
+          value: {{ .path | quote }}
+        - name: {{ .name | upper }}_DIR
+          value: {{ .mountPath | quote }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 8888
+          protocol: TCP
+        command: 
+        - sh 
+        - -c
+        - |
           {{- range .Values.nfsMounts }}
-            - name: {{ .name }}
-              mountPath: {{ .mountPath }}
-          {{- end }}  
-          stdin: {{ .Values.image.stdinOpen }}
-          tty: {{ .Values.image.tty }}
-          {{- if .Values.epicsConfiguration.name }}
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.epicsConfiguration.name }}
+          mkdir -p {{ .mountPath }}/{{ include "jupyter-control-notebook-chart.fullname" . }}
           {{- end }}
-          env:
-            - name: NOTEBOOK_ARGS
-              value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
-            - name: JUPYTER_SERVER_URL
-              value: "http://127.0.0.1:8888"
-           {{- if .Values.epicsConfiguration.gateway }}
-            - name: EPICS_CA_ADDR_LIST
-              value: {{ .Values.epicsConfiguration.gateway | quote }}
-            - name: EPICS_CA_AUTO_ADDR_LIST
-              value: "NO"
-            {{- end }}
-            {{- range .Values.nfsMounts }}
-            - name: {{ .name | upper }}_SERVER
-              value: {{ .server | quote }}
-            - name: {{ .name | upper }}_SERVER_PATH
-              value: {{ .path | quote }}
-            - name: {{ .name | upper }}_DIR
-              value: {{ .mountPath | quote }}
-            {{- end }}
-          ports:
-            - name: http
-              containerPort: 8888
-              protocol: TCP
-          command: 
-            - sh 
-            - -c
-            - |
-              {{- range .Values.nfsMounts }}
-                mkdir -p {{ .mountPath }}/{{ include "jupyter-control-notebook-chart.fullname" . }}
-              {{- end }}
-              echo "Starting Notebook"
-
-              {{- range .Values.pip }}
-                echo "installing {{.}}"
-                pip install {{.}}
-              {{- end }}
-              
-              tini -g -- start.sh /usr/local/bin/start-notebook.py
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          echo "Starting Notebook"
+          {{- range .Values.pip }}
+          echo "installing {{.}}"
+          pip install {{.}}
+          {{- end }}
+          tini -g -- start.sh /usr/local/bin/start-notebook.py
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -228,19 +135,16 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.dataVolume.claim }}
-
       volumes:
       {{- range .Values.nfsMounts }}
-        - name: {{ .name }}
-          nfs:
-            server: {{ .server }}
-            path: {{ .path }}
+      - name: {{ .name }}
+        nfs:
+          server: {{ .server }}
+          path: {{ .path }}
       {{- end }}
-        - name: jupyter-data
-
-          persistentVolumeClaim:
-            claimName: {{ .Values.dataVolume.claim }}
-      
+      - name: jupyter-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.dataVolume.claim }}
       {{- end }}
   {{- if not .Values.dataVolume.claim }}
   volumeClaimTemplates:
