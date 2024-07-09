@@ -156,7 +156,10 @@ spec:
           volumeMounts:
             - name: jupyter-data
               mountPath: /home/jovyan/work
-            
+          {{- range .Values.nfsMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}  
           stdin: {{ .Values.image.stdinOpen }}
           tty: {{ .Values.image.tty }}
           {{- if .Values.epicsConfiguration.name }}
@@ -175,6 +178,14 @@ spec:
             - name: EPICS_CA_AUTO_ADDR_LIST
               value: "NO"
             {{- end }}
+            {{- range .Values.nfsMounts }}
+            - name: {{ .name | upper }}_SERVER
+              value: {{ .server | quote }}
+            - name: {{ .name | upper }}_SERVER_PATH
+              value: {{ .path | quote }}
+            - name: {{ .name | upper }}_DIR
+              value: {{ .mountPath | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8888
@@ -183,14 +194,17 @@ spec:
             - sh 
             - -c
             - |
+              {{- range .Values.nfsMounts }}
+                mkdir -p {{ .mountPath }}/{{ include "jupyter-control-notebook-chart.fullname" . }}
+              {{- end }}
               echo "Starting Notebook"
 
               {{- range .Values.pip }}
                 echo "installing {{.}}"
                 pip install {{.}}
               {{- end }}
-              cd /usr/local/bin/
-              tini -g -- start.sh start-notebook.py
+              
+              tini -g -- start.sh /usr/local/bin/start-notebook.py
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -208,6 +222,12 @@ spec:
       {{- if .Values.dataVolume.claim }}
 
       volumes:
+      {{- range .Values.nfsMounts }}
+        - name: {{ .name }}
+          nfs:
+            server: {{ .server }}
+            path: {{ .path }}
+      {{- end }}
         - name: jupyter-data
 
           persistentVolumeClaim:

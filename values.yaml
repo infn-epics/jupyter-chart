@@ -97,3 +97,5 @@ epicsConfiguration:
 
 pip:
   - infn-ophyd-hal
+
+nfsMounts:
