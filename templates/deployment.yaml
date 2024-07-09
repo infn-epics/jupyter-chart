@@ -134,17 +134,22 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.dataVolume.claim }}
+      {{- if or .Values.dataVolume.claim .Values.nfsMounts  }}
+
       volumes:
-      {{- range .Values.nfsMounts }}
-      - name: {{ .name }}
-        nfs:
-          server: {{ .server }}
-          path: {{ .path }}
       {{- end }}
-      - name: jupyter-data
-        persistentVolumeClaim:
-          claimName: {{ .Values.dataVolume.claim }}
+
+      {{- range .Values.nfsMounts }}
+        - name: {{ .name }}
+          nfs:
+            server: {{ .server }}
+            path: {{ .path }}
+      {{- end }} 
+      {{- if .Values.dataVolume.claim }}
+      
+        - name: jupyter-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.dataVolume.claim }}
       {{- end }}
   {{- if not .Values.dataVolume.claim }}
   volumeClaimTemplates:
