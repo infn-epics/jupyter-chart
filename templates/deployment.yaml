@@ -112,7 +112,7 @@ spec:
         - -c
         - |
           {{- range .Values.nfsMounts }}
-          mkdir -p {{ .mountPath }}/{{ include "jupyter-control-notebook-chart.fullname" . }}
+          mkdir -p {{ .mountPath }}/notebook
           {{- end }}
           echo "Starting Notebook"
           {{- range .Values.pip }}
