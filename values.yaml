@@ -99,4 +99,5 @@ epicsConfiguration:
 pip:
   - infn-ophyd-hal
 
+staticIP:
 nfsMounts:
