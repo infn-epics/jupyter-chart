@@ -152,12 +152,7 @@ spec:
             claimName: {{ .Values.dataVolume.claim }}
       {{- end }}
   {{- if not .Values.dataVolume.claim }}
-  volumeClaimTemplates:
-  - metadata:
-      name: jupyter-data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: {{ .Values.dataVolume.size }}
+  volume:
+  - name: jupyter-data
+    emptyDir: {}
   {{- end }}
