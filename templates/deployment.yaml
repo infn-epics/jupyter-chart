@@ -150,9 +150,7 @@ spec:
         - name: jupyter-data
           persistentVolumeClaim:
             claimName: {{ .Values.dataVolume.claim }}
+      {{- else }}
+        - name: jupyter-data
+          emptyDir: {}
       {{- end }}
-  {{- if not .Values.dataVolume.claim }}
-    volume:
-      - name: jupyter-data
-        emptyDir: {}
-  {{- end }}
