@@ -152,7 +152,7 @@ spec:
             claimName: {{ .Values.dataVolume.claim }}
       {{- end }}
   {{- if not .Values.dataVolume.claim }}
-  volume:
-  - name: jupyter-data
-    emptyDir: {}
+    volume:
+      - name: jupyter-data
+        emptyDir: {}
   {{- end }}
