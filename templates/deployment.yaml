@@ -25,105 +25,110 @@ spec:
       {{- if .Values.securityContext }}
       securityContext:
         {{- toYaml .Values.securityContext | nindent 8 }}
-      {{- end -}}
+      {{- end }}
       {{- if .Values.securityContext.runAsUser }}
         fsGroup: {{ .Values.securityContext.runAsUser }}
       {{- end }}
       initContainers:
-      - name: fix-permissions
-        image: baltig.infn.it:4567/epics-containers/container-init
-        command: 
-        - sh 
-        - -c
-        - |
-          mountdir=/home/jovyan
-          cd $mountdir
-          id=`id`
-          url="{{ .Values.gitRepoConfig.url }}"
-
-          echo "ID: $id git $url"
-          if [ -n "$url" ]; then
-            clone_dir=$(basename "$url" .git)
-            echo "* git directory $clone_dir"
-            if [ -d $clone_dir ]; then
-              cd $clone_dir
-              git pull --recurse-submodules
-            else 
-              if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
-                git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules 
-              else
-                git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules 
+        - name: fix-permissions
+          image: baltig.infn.it:4567/epics-containers/container-init
+          command:
+            - sh
+            - -c
+            - |
+              mountdir=/home/jovyan
+              cd $mountdir
+              id=`id`
+              url="{{ .Values.gitRepoConfig.url }}"
+              echo "ID: $id git $url"
+              if [ -n "$url" ]; then
+                clone_dir=$(basename "$url" .git)
+                echo "* git directory $clone_dir"
+                if [ -d $clone_dir ]; then
+                  cd $clone_dir
+                  git pull --recurse-submodules
+                else 
+                  if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
+                    git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules 
+                  else
+                    git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules 
+                  fi
+                fi
               fi
-            fi
-          fi
-          ls -latr
-        volumeMounts:
-        - name: jupyter-data
-          mountPath: /home/jovyan
-        resources:
-{{ toYaml .Values.resources | indent 12 }}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 8 }}
+              ls -latr
+          volumeMounts:
+            - name: jupyter-data
+              mountPath: /home/jovyan
+          {{- if .Values.resources }}
+          resources:
+            {{ toYaml .Values.resources | indent 12 }}
+          {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        volumeMounts:
-        - name: jupyter-data
-          mountPath: /home/jovyan/work
-        {{- range .Values.nfsMounts }}
-        - name: {{ .name }}
-          mountPath: {{ .mountPath }}
-        {{- end }}
-        stdin: {{ .Values.image.stdinOpen }}
-        tty: {{ .Values.image.tty }}
-        {{- if .Values.epicsConfiguration.name }}
-        envFrom:
-        - configMapRef:
-            name: {{ .Values.epicsConfiguration.name }}
-        {{- end }}
-        env:
-        - name: NOTEBOOK_ARGS
-          value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
-        - name: JUPYTER_SERVER_URL
-          value: "http://127.0.0.1:8888"
-        {{- if .Values.epicsConfiguration.gateway }}
-        - name: EPICS_CA_ADDR_LIST
-          value: {{ .Values.epicsConfiguration.gateway | quote }}
-        - name: EPICS_CA_AUTO_ADDR_LIST
-          value: "NO"
-        {{- end }}
-        {{- range .Values.nfsMounts }}
-        - name: {{ .name | upper }}_SERVER
-          value: {{ .server | quote }}
-        - name: {{ .name | upper }}_SERVER_PATH
-          value: {{ .path | quote }}
-        - name: {{ .name | upper }}_DIR
-          value: {{ .mountPath | quote }}
-        {{- end }}
-        ports:
-        - name: http
-          containerPort: 8888
-          protocol: TCP
-        command: 
-        - sh 
-        - -c
-        - |
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: jupyter-data
+              mountPath: /home/jovyan/work
           {{- range .Values.nfsMounts }}
-          mkdir -p {{ .mountPath }}/notebook
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
           {{- end }}
-          echo "Starting Notebook"
-          {{- range .Values.pip }}
-          echo "installing {{.}}"
-          pip install {{.}}
+          {{- if .Values.image.stdinOpen  }}
+          stdin: {{ .Values.image.stdinOpen }}
           {{- end }}
-          tini -g -- start.sh /usr/local/bin/start-notebook.py
-        resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+
+          {{- if .Values.image.tty  }}
+          tty: {{ .Values.image.tty }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.epicsConfiguration.name | default "default-config" }}
+          env:
+            - name: NOTEBOOK_ARGS
+              value: "--PasswordIdentityProvider.hashed_password={{ .Values.hashedpass }}"
+            - name: JUPYTER_SERVER_URL
+              value: "http://127.0.0.1:8888"
+            {{- if .Values.epicsConfiguration.gateway }}
+            - name: EPICS_CA_ADDR_LIST
+              value: {{ .Values.epicsConfiguration.gateway | quote }}
+            - name: EPICS_CA_AUTO_ADDR_LIST
+              value: "NO"
+            {{- end }}
+            {{- range .Values.nfsMounts }}
+            - name: {{ .name | upper }}_SERVER
+              value: {{ .server | quote }}
+            - name: {{ .name | upper }}_SERVER_PATH
+              value: {{ .path | quote }}
+            - name: {{ .name | upper }}_DIR
+              value: {{ .mountPath | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8888
+              protocol: TCP
+          command:
+            - sh
+            - -c
+            - |
+              {{- range .Values.nfsMounts }}
+              mkdir -p {{ .mountPath }}/notebook
+              {{- end }}
+              echo "Starting Notebook"
+              {{- range .Values.pip }}
+              echo "installing {{.}}"
+              pip install {{.}}
+              {{- end }}
+              tini -g -- start.sh /usr/local/bin/start-notebook.py
+          
+          {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources | nindent 10 }}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -136,23 +141,18 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if or .Values.dataVolume.claim .Values.nfsMounts  }}
-
       volumes:
-      {{- end }}
-
-      {{- range .Values.nfsMounts }}
+        {{- range .Values.nfsMounts }}
         - name: {{ .name }}
           nfs:
             server: {{ .server }}
             path: {{ .path }}
-      {{- end }} 
-      {{- if .Values.dataVolume.claim }}
-      
+        {{- end }} 
+        {{- if .Values.dataVolume.claim }}
         - name: jupyter-data
           persistentVolumeClaim:
             claimName: {{ .Values.dataVolume.claim }}
-      {{- else }}
+        {{- else }}
         - name: jupyter-data
           emptyDir: {}
-      {{- end }}
+        {{- end }}
