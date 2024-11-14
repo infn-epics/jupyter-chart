@@ -49,9 +49,9 @@ spec:
                   git pull --recurse-submodules
                 else 
                   if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
-                    git clone -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules 
+                    git clone --depth 1 -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules 
                   else
-                    git clone {{ .Values.gitRepoConfig.url }} --recurse-submodules 
+                    git clone --depth 1{{ .Values.gitRepoConfig.url }} --recurse-submodules 
                   fi
                 fi
               fi
@@ -61,7 +61,7 @@ spec:
               mountPath: /home/jovyan
           {{- if .Values.resources }}
           resources:
-            {{ toYaml .Values.resources | indent 12 }}
+{{ toYaml .Values.resources | indent 12 }}
           {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
