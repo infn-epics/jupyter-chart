@@ -51,7 +51,7 @@ spec:
                   if [ -n "{{ .Values.gitRepoConfig.branch }}" ]; then
                     git clone --depth 1 -b {{ .Values.gitRepoConfig.branch }} {{ .Values.gitRepoConfig.url }} --recurse-submodules 
                   else
-                    git clone --depth 1{{ .Values.gitRepoConfig.url }} --recurse-submodules 
+                    git clone --depth 1 {{ .Values.gitRepoConfig.url }} --recurse-submodules 
                   fi
                 fi
               fi
