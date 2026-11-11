@@ -31,7 +31,7 @@ spec:
       {{- end }}
       initContainers:
         - name: fix-permissions
-          image: baltig.infn.it:4567/epics-containers/container-init
+          image: {{ .Values.initcontainer.image | quote }}
           command:
             - sh
             - -c

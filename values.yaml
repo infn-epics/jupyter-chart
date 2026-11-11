@@ -4,8 +4,12 @@
 
 replicaCount: 1
 
+# Image of the fix-permissions init container (clones gitRepoConfig.url)
+initcontainer:
+  image: "ghcr.io/infn-epics/container-init:latest"
+
 image:
-  repository: baltig.infn.it:4567/epics-containers/jupyter-science-epics
+  repository: ghcr.io/infn-epics/jupyter-science-epics
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
